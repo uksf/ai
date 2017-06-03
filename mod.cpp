@@ -1,0 +1,12 @@
+name = "UKSF AI";
+picture = "modLarge.paa";
+actionName = "GitHub";
+action = "https://github.com/uksf/ai";
+description = "UKSF - AI";
+logo = "mod.paa";
+logoOver = "mod.paa";
+tooltip = "UKSF";
+tooltipOwned = "UKSF Owned";
+overview = "UKSF AI";
+author = "UKSF SR11 Team";
+overviewPicture = "modLarge.paa";

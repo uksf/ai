@@ -1,0 +1,13 @@
+PREP(addObjectsToCurators);
+PREP(configExport);
+PREP(configExportExtension);
+PREP(fpsAction);
+PREP(fpsGet);
+PREP(fpsSet);
+PREP(fpsToggle);
+PREP(getNearPlayers);
+PREP(hint);
+PREP(lineOfSight);
+PREP(populate);
+PREP(setAllowUnconcious);
+PREP(setSkill);
