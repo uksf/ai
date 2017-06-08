@@ -340,8 +340,7 @@ def compile_extensions(extensions_root, force_build):
         os.chdir(vcproj32)
         subprocess.call(["cmake", "..", "-DUSE_64BIT_BUILD=OFF", "-G", "Visual Studio 15 2017"])
         print()
-        subprocess.call(["msbuild", "uksf_extension_persistence.sln", "/m", "/p:Configuration=Release"])
-        #subprocess.call(["C:/Program Files (x86)/MSBuild/14.0/Bin/MSBuild.exe", "uksf_extension_persistence.sln", "/tv:14.0", "/m", "/p:Configuration=Release"])
+        subprocess.call(["msbuild", "ai.sln", "/m", "/p:Configuration=Debug"])
 
         # Prepare 64bit build dirs
         vcproj64 = os.path.join(extensions_root,"vcproj64")
@@ -349,10 +348,9 @@ def compile_extensions(extensions_root, force_build):
             os.mkdir(vcproj64)
         # Build
         os.chdir(vcproj64)
-        subprocess.call(["cmake", "..", "-DUSE_64BIT_BUILD=OFF", "-G", "Visual Studio 15 2017 Win64"])
+        subprocess.call(["cmake", "..", "-DUSE_64BIT_BUILD=ON", "-G", "Visual Studio 15 2017 Win64"])
         print()
-        subprocess.call(["msbuild", "uksf_extension_persistence.sln", "/m", "/p:Configuration=Release"])
-        #subprocess.call(["C:/Program Files (x86)/MSBuild/14.0/Bin/MSBuild.exe", "uksf_extension_persistence.sln", "/tv:14.0", "/m", "/p:Configuration=Release", "/p:Platform=x64"])
+        subprocess.call(["msbuild", "ai.sln", "/m", "/p:Configuration=Debug"])
     except:
         print_error("COMPILING EXTENSIONS.")
         raise

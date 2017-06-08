@@ -1,6 +1,6 @@
 class Intercept {
     class PREFIX {
-        class PREFIX {
+        class DOUBLES(PREFIX,main) {
             pluginName = QUOTE(PREFIX);
         };
     };

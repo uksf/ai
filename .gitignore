@@ -8,3 +8,6 @@ texHeaders.bin
 *.biprivatekey
 Thumbs.db
 *.diff
+extensions/vcproj32/*
+extensions/vcproj64/*
+.vs
