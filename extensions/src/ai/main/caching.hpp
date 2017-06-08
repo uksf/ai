@@ -9,5 +9,4 @@
 class uksf_ai_caching {
 public:
     uksf_ai_caching();
-    ~uksf_ai_caching();
 };

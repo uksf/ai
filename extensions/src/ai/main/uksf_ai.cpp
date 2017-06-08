@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <atomic>
 #include "uksf_ai.hpp"
+#include "caching.hpp"
 
 #include "intercept.hpp"
 #include "logging.hpp"
@@ -16,23 +17,24 @@ int __cdecl intercept::api_version() {
 }
 
 void __cdecl intercept::pre_init() {
-    uksf_ai::getInstance().preInit.emit();
+    uksf_ai::getInstance().preInit();
 }
 
 void __cdecl intercept::post_init() {
-    uksf_ai::getInstance().postInit.emit();
+    uksf_ai::getInstance().postInit();
 }
 
 uksf_ai::uksf_ai() {
-    preInit.connect([]() {
+    preInit.connect([this]() {
         intercept::sqf::diag_log("UKSF AI SIGNAL PREINIT"_sv);
     });
 
-    postInit.connect([]() {
+    postInit.connect([this]() {
         intercept::sqf::diag_log("UKSF AI SIGNAL POSTINIT"_sv);
     });
+
+    uksf_ai_caching::uksf_ai_caching();
 }
-uksf_ai::~uksf_ai() {}
 
 uksf_ai& uksf_ai::getInstance() {
     static uksf_ai instance;
@@ -53,6 +55,7 @@ void init(void) {
     el::Loggers::setDefaultConfigurations(conf, true);
 
     LOG(INFO) << "Intercept UKSF AI DLL Loaded";
+    //uksf_ai();
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {

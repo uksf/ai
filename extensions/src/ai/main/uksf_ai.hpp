@@ -17,7 +17,6 @@ constexpr std::string_view operator ""_sv(char const* str, std::size_t len) noex
 class uksf_ai {
 public:
     uksf_ai();
-    ~uksf_ai();
 
     static uksf_ai& getInstance();
 
