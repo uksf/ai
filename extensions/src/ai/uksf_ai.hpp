@@ -1,18 +1,19 @@
 #pragma once
-#include "shared.hpp"
+#include "common.hpp"
 #include "caching.hpp"
 
-class uksf_ai {
-public:
-    void start();
+#ifdef COMPONENT
+#undef COMPONENT
+#define COMPONENT main
+#endif
+#include "macros.hpp"
 
-    static uksf_ai* getInstance();
+class uksf_ai: public singleton<uksf_ai> {
+public:
+    uksf_ai();
 
     Signal<void()> preInit;
     Signal<void()> postInit;
     Signal<void()> onFrame;
     Signal<void()> missionStopped;
-
-private:
-    static uksf_ai* instance;
 };

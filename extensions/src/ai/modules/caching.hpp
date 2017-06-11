@@ -1,23 +1,28 @@
 #pragma once
-#include "shared.hpp"
+#include "common.hpp"
 #include "uksf_ai.hpp"
 
-class uksf_ai_caching {
+#ifdef COMPONENT
+#undef COMPONENT
+#define COMPONENT caching
+#endif
+#include "macros.hpp"
+
+class uksf_ai_caching: public singleton<uksf_ai_caching> {
 public:
     uksf_ai_caching();
 
-    static uksf_ai_caching* getInstance();
-
     void startClientThread();
+    void startServerThread();
     void stopClientThread();
+    void stopServerThread();
     void onFrameFunction();
 
 private:
-    static uksf_ai_caching* instance;
-
-    bool threadStop;
-    std::thread clientThread;
+    bool clientThreadStop, serverThreadStop;
+    std::thread clientThread, serverThread;
     std::list<intercept::types::object> visibleUnits;
 
     void clientThreadFunction();
+    void serverThreadFunction();
 };

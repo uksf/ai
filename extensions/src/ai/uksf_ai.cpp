@@ -19,15 +19,6 @@ void __cdecl intercept::mission_stopped() {
     uksf_ai::getInstance()->missionStopped();
 };
 
-uksf_ai* uksf_ai::instance = 0;
-
-uksf_ai* uksf_ai::getInstance() {
-    if (instance == 0) {
-        instance = new uksf_ai();
-    }
-    return instance;
-}
-
-void uksf_ai::start() {
+uksf_ai::uksf_ai() {
     new uksf_ai_caching();
 }

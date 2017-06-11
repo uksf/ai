@@ -1,15 +1,18 @@
 #include "caching.hpp"
 
 uksf_ai_caching::uksf_ai_caching() {
-    instance = this;
-
     uksf_ai::getInstance()->preInit.connect([this]() {
         LOG(DEBUG) << "CACHING SIGNAL PREINIT";
     });
     
     uksf_ai::getInstance()->postInit.connect([this]() {
         LOG(DEBUG) << "CACHING SIGNAL POSTINIT";
-        uksf_ai_caching::getInstance()->startClientThread();
+        if (intercept::sqf::has_interface()) {
+            uksf_ai_caching::getInstance()->startClientThread();
+        }
+        if (intercept::sqf::is_server()) {
+            uksf_ai_caching::getInstance()->startServerThread();
+        }
     });
 
     uksf_ai::getInstance()->onFrame.connect([this]() {
@@ -18,40 +21,45 @@ uksf_ai_caching::uksf_ai_caching() {
 
     uksf_ai::getInstance()->missionStopped.connect([this]() {
         LOG(DEBUG) << "CACHING SIGNAL MISSION STOPPED";
-        uksf_ai_caching::getInstance()->stopClientThread();
+        if (intercept::sqf::has_interface()) {
+            uksf_ai_caching::getInstance()->stopClientThread();
+        }
+        if (intercept::sqf::is_server()) {
+            uksf_ai_caching::getInstance()->stopServerThread();
+        }
     });
 }
 
-uksf_ai_caching* uksf_ai_caching::instance = 0;
-
-uksf_ai_caching* uksf_ai_caching::getInstance() {
-    if (instance == 0) {
-        instance = new uksf_ai_caching();
-    }
-    return instance;
-}
-
 void uksf_ai_caching::startClientThread() {
-    threadStop = false;
+    clientThreadStop = false;
     clientThread = std::thread(&uksf_ai_caching::clientThreadFunction, this);
 }
 
+void uksf_ai_caching::startServerThread() {
+    serverThreadStop = false;
+    serverThread = std::thread(&uksf_ai_caching::serverThreadFunction, this);
+}
+
 void uksf_ai_caching::stopClientThread() {
-    threadStop = true;
+    clientThreadStop = true;
     clientThread.join();
 }
 
+void uksf_ai_caching::stopServerThread() {
+    serverThreadStop = true;
+    serverThread.join();
+}
+
 void uksf_ai_caching::clientThreadFunction() {
-    LOG(DEBUG) << "START TEST THREAD";
-    while (!threadStop) {
+    while (!clientThreadStop) {
         {
-            intercept::client::invoker_lock losLock;
+            intercept::client::invoker_lock cachingClientLock;
             visibleUnits.clear();
             std::vector<intercept::types::group> groups = intercept::sqf::all_groups();
             auto group = groups.begin();
             while (group != groups.end()) {
                 intercept::types::object leader = intercept::sqf::leader(*group);
-                if (uksf_shared::lineOfSight(leader, intercept::sqf::player(), true, true)) {
+                if (uksf_common::lineOfSight(leader, intercept::sqf::player(), true, true)) {
                     visibleUnits.push_back(leader);
                 }
                 ++group;
@@ -59,7 +67,15 @@ void uksf_ai_caching::clientThreadFunction() {
         }
         Sleep(1000);
     }
-    LOG(DEBUG) << "SHUT DOWN TEST THREAD";
+}
+
+void uksf_ai_caching::serverThreadFunction() {
+    while (!serverThreadStop) {
+        {
+            intercept::client::invoker_lock cachingServerLock;
+        }
+        Sleep(5000);
+    }
 }
 
 void uksf_ai_caching::onFrameFunction() {

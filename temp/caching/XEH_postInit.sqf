@@ -1,5 +1,5 @@
 #include "script_component.hpp"
-
+/*
 if (!GVAR(enabled)) exitWith {
     INFO("Caching is disabled.");
     enableDynamicSimulationSystem false;
@@ -22,7 +22,7 @@ if (hasInterface) then {
 };
 
 //Debug shizzle
-/*
+
 onEachFrame {
     private _player = if (!(isNull (getConnectedUAV player))) then {
         (gunner (getConnectedUAV player))

@@ -1,9 +1,7 @@
 #pragma once
-#include <vector>
-#include <functional>
-#include "logging.hpp"
+//Courtesy of dedmen from TFAR https://github.com/michail-nikolaev/task-force-arma-3-radio/blob/1.0/ts/src/SignalSlot.hpp
 
-template<class Sig>
+template<class sig>
 class Signal;
 
 template<class ReturnType, class... Args>
@@ -34,7 +32,6 @@ public:
 private:
     std::vector<Slot> slots{};
 };
-
 
 template<class... Args>
 class Signal<void(Args...)> {

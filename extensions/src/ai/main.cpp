@@ -1,4 +1,4 @@
-#include "shared.hpp"
+#include "common.hpp"
 #include "uksf_ai.hpp"
 
 INITIALIZE_EASYLOGGINGPP
@@ -23,7 +23,7 @@ void init(void) {
     LOG(INFO) << "#####################################################################################";
     LOG(INFO) << "Intercept UKSF AI DLL Loaded";
 
-    uksf_ai::getInstance()->start();
+    new uksf_ai();
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
