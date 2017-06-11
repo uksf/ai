@@ -4,7 +4,7 @@ class ACE_Settings {
         displayName = QUOTE(Caching);
         description = QUOTE(Enables AI Caching);
         typeName = "BOOL";
-        value = 0;
+        value = 1;
     };
     class GVAR(distance) {
         category = "ACE";

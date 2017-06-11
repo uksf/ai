@@ -162,7 +162,7 @@ def compile_extensions(extensions_root):
             os.mkdir(vcproj32)
         # Build
         os.chdir(vcproj32)
-        subprocess.call(["cmake", "..", "-DUSE_64BIT_BUILD=OFF", "-G", "Visual Studio 15 2017"])
+        subprocess.call(["cmake", "..", "-G", "Visual Studio 15 2017"])
         print()
         subprocess.call(["msbuild", "ai.sln", "/m", "/p:Configuration=Debug"])
 
@@ -172,7 +172,7 @@ def compile_extensions(extensions_root):
             os.mkdir(vcproj64)
         # Build
         os.chdir(vcproj64)
-        subprocess.call(["cmake", "..", "-DUSE_64BIT_BUILD=ON", "-G", "Visual Studio 15 2017 Win64"])
+        subprocess.call(["cmake", "..", "-G", "Visual Studio 15 2017 Win64"])
         print()
         subprocess.call(["msbuild", "ai.sln", "/m", "/p:Configuration=Debug"])
     except:
