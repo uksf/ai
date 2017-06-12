@@ -11,6 +11,7 @@
 #include <functional>
 
 #include "intercept.hpp"
+using namespace intercept;
 
 #include "logging.hpp"
 #include "signalslot.hpp"
@@ -27,5 +28,5 @@ constexpr std::string_view operator ""_sv(char const* str, std::size_t len) noex
 class uksf_common {
 public:
     static float getZoom();
-    static bool lineOfSight(intercept::types::object& target, intercept::types::object& source, bool zoomCheck, bool groupCheck);
+    static bool lineOfSight(types::object& target, types::object& source, bool zoomCheck, bool groupCheck);
 };

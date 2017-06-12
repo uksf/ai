@@ -21,7 +21,7 @@ public:
 private:
     bool clientThreadStop, serverThreadStop;
     std::thread clientThread, serverThread;
-    std::list<intercept::types::object> visibleUnits;
+    std::list<types::object> visibleUnits;
 
     void clientThreadFunction();
     void serverThreadFunction();

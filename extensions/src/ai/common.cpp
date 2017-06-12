@@ -1,43 +1,41 @@
 #include "common.hpp"
 
 float uksf_common::getZoom() {
-    float safeZoneW = intercept::sqf::safe_zone_w();
-    float deltaX = ((intercept::sqf::world_to_screen(intercept::sqf::position_camera_to_world(intercept::types::vector3(5000, 0, 10000))).x) - 0.5f);
+    float safeZoneW = sqf::safe_zone_w();
+    float deltaX = ((sqf::world_to_screen(sqf::position_camera_to_world(types::vector3(5000, 0, 10000))).x) - 0.5f);
     float trigRatio = (((safeZoneW / 2.0f) * 5000.0f) / (10000.0f * deltaX));
-    float configFOV = (trigRatio / (safeZoneW / intercept::sqf::safe_zone_h()));
+    float configFOV = (trigRatio / (safeZoneW / sqf::safe_zone_h()));
     return (0.75f / configFOV);
 }
 
-bool uksf_common::lineOfSight(intercept::types::object& target, intercept::types::object& source, bool zoomCheck, bool groupCheck) {
+bool uksf_common::lineOfSight(types::object& target, types::object& source, bool zoomCheck, bool groupCheck) {
     bool los = false;
     bool inScreen = false;
-    intercept::types::vector2 screenPosition = intercept::sqf::world_to_screen(intercept::sqf::get_pos(target), inScreen);
+    types::vector2 screenPosition = sqf::world_to_screen(sqf::get_pos(target), inScreen);
     bool onScreen = (inScreen && ((std::abs(screenPosition.x) < 1.5f) && (std::abs(screenPosition.y) < 1.5f)));
-    los = (onScreen && (intercept::sqf::check_visibility(source, "VIEW", intercept::sqf::vehicle(source), intercept::sqf::eye_pos(source), intercept::sqf::eye_pos(target)) > 0));
+    los = (onScreen && (sqf::check_visibility(source, "VIEW", sqf::vehicle(source), sqf::eye_pos(source), sqf::eye_pos(target)) > 0));
 
     if (onScreen && !los && groupCheck) {
-        std::vector<intercept::types::object> units = intercept::sqf::units(target);
-        auto unit = units.begin();
-        while (unit != units.end()) {
+        std::vector<types::object> units = sqf::units(target);
+        for (auto& unit : units) {
             bool inScreen = false;
-            intercept::types::vector2 screenPosition = intercept::sqf::world_to_screen(intercept::sqf::get_pos(*unit), inScreen);
+            types::vector2 screenPosition = sqf::world_to_screen(sqf::get_pos(unit), inScreen);
             bool onScreen = (inScreen && ((std::abs(screenPosition.x) < 1.5f) && (std::abs(screenPosition.y) < 1.5f)));
-            los = (onScreen && (intercept::sqf::check_visibility(source, "VIEW", intercept::sqf::vehicle(source), intercept::sqf::eye_pos(source), intercept::sqf::eye_pos(*unit)) > 0));
+            los = (onScreen && (sqf::check_visibility(source, "VIEW", sqf::vehicle(source), sqf::eye_pos(source), sqf::eye_pos(unit)) > 0));
             if (los) {
-                target = std::ref(*unit);
+                target = std::ref(unit);
                 break;
             }
-            ++unit;
         }
     }
 
     if (los && zoomCheck) {
-        float distanceMultiplier = (200 + (4 * 200 * (std::max(0.0f, (float) (intercept::sqf::current_vision_mode(source) - 1)))));
-        if (!intercept::sqf::is_kind_of(intercept::sqf::vehicle(target), "CAManBase")) {
+        float distanceMultiplier = (200 + (4 * 200 * (std::max(0.0f, (float) (sqf::current_vision_mode(source) - 1)))));
+        if (!sqf::is_kind_of(sqf::vehicle(target), "CAManBase")) {
             distanceMultiplier *= 2.5f;
         }
-        float distanceCheck = std::min(intercept::sqf::get_object_view_distance().object_distance, 1000 + (distanceMultiplier * uksf_common::getZoom()));
-        float distance = (intercept::sqf::get_pos_world(target)).distance(intercept::sqf::get_pos_world(source));
+        float distanceCheck = std::min(sqf::get_object_view_distance().object_distance, 1000 + (distanceMultiplier * uksf_common::getZoom()));
+        float distance = (sqf::get_pos_world(target)).distance(sqf::get_pos_world(source));
         los = (distance < distanceCheck);
     }
 
