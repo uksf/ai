@@ -1,5 +1,3 @@
-release/*
-tools/temp
 *.cache
 *.pbo
 texHeaders.bin
@@ -8,6 +6,8 @@ texHeaders.bin
 *.biprivatekey
 Thumbs.db
 *.diff
-extensions/vcproj32/*
-extensions/vcproj64/*
 .vs
+extentions/build32/*
+extentions/build64/*
+release/*
+intercept/*
