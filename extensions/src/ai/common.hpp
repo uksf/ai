@@ -17,9 +17,6 @@ using namespace intercept;
 #include "signalslot.hpp"
 #include "singleton.hpp"
 
-#define COMPONENT common
-#include "macros.hpp"
-
 //TODO: Remove after exposed in intercept
 constexpr std::string_view operator ""_sv(char const* str, std::size_t len) noexcept {
     return { str, len };
@@ -27,6 +24,9 @@ constexpr std::string_view operator ""_sv(char const* str, std::size_t len) noex
 
 class uksf_common {
 public:
+    static void getFunctions();
     static float getZoom();
-    static bool lineOfSight(types::object& target, types::object& source, bool zoomCheck, bool groupCheck);
+    static bool lineOfSight(object& target, object& source, bool zoomCheck, bool groupCheck);
+    
+    static game_value CBA_Settings_fnc_init;
 };

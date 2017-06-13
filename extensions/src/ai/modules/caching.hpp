@@ -2,27 +2,24 @@
 #include "common.hpp"
 #include "uksf_ai.hpp"
 
-#ifdef COMPONENT
-#undef COMPONENT
-#define COMPONENT caching
-#endif
-#include "macros.hpp"
-
 class uksf_ai_caching: public singleton<uksf_ai_caching> {
 public:
     uksf_ai_caching();
 
-    void startClientThread();
     void startServerThread();
-    void stopClientThread();
+    void startClientThread();
     void stopServerThread();
+    void stopClientThread();
     void onFrameFunction();
 
 private:
-    bool clientThreadStop, serverThreadStop;
-    std::thread clientThread, serverThread;
+    bool serverThreadStop, clientThreadStop;
+    std::thread serverThread, clientThread;
     std::list<types::object> visibleUnits;
 
-    void clientThreadFunction();
     void serverThreadFunction();
+    void clientThreadFunction();
+
+    bool cachingEnabled;
+    float cachingDistance;
 };
