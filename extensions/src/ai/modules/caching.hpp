@@ -12,6 +12,11 @@ public:
     void stopClientThread();
     void onFrameFunction();
 
+    const bool& getCachingEnabled();
+    void setCachingEnabled(const bool& value);
+    const float& getCachingDistance();
+    void setCachingDistance(const float& value);
+
 private:
     bool serverThreadStop, clientThreadStop;
     std::thread serverThread, clientThread;

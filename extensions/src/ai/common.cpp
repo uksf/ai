@@ -4,6 +4,7 @@ game_value uksf_common::CBA_Settings_fnc_init = {};
 
 void uksf_common::getFunctions() {
     uksf_common::CBA_Settings_fnc_init = sqf::get_variable(sqf::ui_namespace(), "CBA_Settings_fnc_init");
+    LOG(DEBUG) << uksf_common::CBA_Settings_fnc_init.data;
 }
 
 float uksf_common::getZoom() {
