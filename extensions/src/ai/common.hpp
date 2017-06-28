@@ -18,9 +18,9 @@ using namespace intercept;
 #include "singleton.hpp"
 
 //TODO: Remove after exposed in intercept
-constexpr std::string_view operator ""_sv(char const* str, std::size_t len) noexcept {
+/*constexpr std::string_view operator ""_sv(char const* str, std::size_t len) noexcept {
     return { str, len };
-};
+};*/
 
 class uksf_common {
 public:

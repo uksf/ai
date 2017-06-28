@@ -12,19 +12,15 @@ public:
     void stopClientThread();
     void onFrameFunction();
 
-    const bool& getCachingEnabled();
-    void setCachingEnabled(const bool& value);
-    const float& getCachingDistance();
-    void setCachingDistance(const float& value);
+    static bool cachingEnabled;
+    static float cachingDistance;
 
 private:
-    bool serverThreadStop, clientThreadStop;
+    bool serverThreadStop = true;
+    bool clientThreadStop = true;
     std::thread serverThread, clientThread;
     std::list<types::object> visibleUnits;
 
     void serverThreadFunction();
     void clientThreadFunction();
-
-    bool cachingEnabled;
-    float cachingDistance;
 };

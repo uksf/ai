@@ -4,7 +4,6 @@ game_value uksf_common::CBA_Settings_fnc_init = {};
 
 void uksf_common::getFunctions() {
     uksf_common::CBA_Settings_fnc_init = sqf::get_variable(sqf::ui_namespace(), "CBA_Settings_fnc_init");
-    LOG(DEBUG) << uksf_common::CBA_Settings_fnc_init.data;
 }
 
 float uksf_common::getZoom() {
@@ -20,7 +19,8 @@ bool uksf_common::lineOfSight(object& target, object& source, bool zoomCheck, bo
     bool inScreen = false;
     vector2 screenPosition = sqf::world_to_screen(sqf::get_pos(target), inScreen);
     bool onScreen = (inScreen && ((std::abs(screenPosition.x) < 1.5f) && (std::abs(screenPosition.y) < 1.5f)));
-    los = (onScreen && (sqf::check_visibility(source, "VIEW", sqf::vehicle(source), sqf::eye_pos(source), sqf::eye_pos(target)) > 0));
+    bool visible = (sqf::check_visibility(source, "VIEW", sqf::vehicle(source), sqf::eye_pos(source), sqf::eye_pos(target)) > 0);
+    los = (onScreen && visible);
 
     if (onScreen && !los && groupCheck) {
         std::vector<object> units = sqf::units(target);
@@ -41,9 +41,11 @@ bool uksf_common::lineOfSight(object& target, object& source, bool zoomCheck, bo
         if (!sqf::is_kind_of(sqf::vehicle(target), "CAManBase")) {
             distanceMultiplier *= 2.5f;
         }
+        LOG(DEBUG) << "Multiplier: " << distanceMultiplier << ", min: " << sqf::get_object_view_distance().object_distance << " vs " << (1000 + (distanceMultiplier * uksf_common::getZoom()));
         float distanceCheck = std::min(sqf::get_object_view_distance().object_distance, 1000 + (distanceMultiplier * uksf_common::getZoom()));
         float distance = (sqf::get_pos_world(target)).distance(sqf::get_pos_world(source));
         los = (distance < distanceCheck);
+        LOG(DEBUG) << "" << distance << " < " << distanceCheck << " = " << los;
     }
 
     return los;

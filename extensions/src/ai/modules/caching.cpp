@@ -1,9 +1,11 @@
 #include "caching.hpp"
 
+bool uksf_ai_caching::cachingEnabled = false;
+float uksf_ai_caching::cachingDistance = 750;
+
 uksf_ai_caching::uksf_ai_caching() {
     uksf_ai::getInstance()->preInit.connect([this]() {
         LOG(DEBUG) << "CACHING SIGNAL PREINIT";
-        LOG(DEBUG) << uksf_common::CBA_Settings_fnc_init.data;
         game_value enabled_args({
             "uksf_ai_caching_enabled",
             "CHECKBOX",
@@ -22,21 +24,28 @@ uksf_ai_caching::uksf_ai_caching() {
             true
         });
         sqf::call(uksf_common::CBA_Settings_fnc_init, distance_args);
+
+        if (sqf::is_server() && !uksf_ai_caching::serverThreadStop) {
+            uksf_ai_caching::getInstance()->stopServerThread();
+        }
+        if (sqf::has_interface() && !uksf_ai_caching::clientThreadStop) {
+            uksf_ai_caching::getInstance()->stopClientThread();
+        }
     });
-        
+
     uksf_ai::getInstance()->postInit.connect([this]() {
         LOG(DEBUG) << "CACHING SIGNAL POSTINIT";
-        uksf_ai_caching::getInstance()->setCachingEnabled(sqf::get_variable(sqf::mission_namespace(), "uksf_ai_caching_enabled", true));
-        uksf_ai_caching::getInstance()->setCachingDistance(sqf::get_variable(sqf::mission_namespace(), "uksf_ai_caching_distance", 750));
+        uksf_ai_caching::cachingEnabled = (sqf::get_variable(sqf::mission_namespace(), "uksf_ai_caching_enabled", true));
+        uksf_ai_caching::cachingDistance = (sqf::get_variable(sqf::mission_namespace(), "uksf_ai_caching_distance", 750));
 
-        if (!uksf_ai_caching::getInstance()->getCachingEnabled()) {
+        if (!uksf_ai_caching::cachingEnabled) {
             LOG(INFO) << "Caching system is disabled";
             sqf::enable_dynamic_simulation_system(false);
         } else {
             LOG(INFO) << "Caching system is enabled";
             sqf::enable_dynamic_simulation_system(true);
-            sqf::set_dynamic_simulation_distance("Group", uksf_ai_caching::getInstance()->getCachingDistance());
-            sqf::set_dynamic_simulation_distance("Vehicle", uksf_ai_caching::getInstance()->getCachingDistance());
+            sqf::set_dynamic_simulation_distance("Group", uksf_ai_caching::cachingDistance);
+            sqf::set_dynamic_simulation_distance("Vehicle", uksf_ai_caching::cachingDistance);
             sqf::set_dynamic_simulation_distance("EmptyVehicle", 250);
             sqf::set_dynamic_simulation_distance("Prop", 50);
             sqf::set_dynamic_simulation_distance_coef("IsMoving", 1.5f);
@@ -51,7 +60,7 @@ uksf_ai_caching::uksf_ai_caching() {
     });
 
     uksf_ai::getInstance()->onFrame.connect([this]() {
-        //uksf_ai_caching::getInstance()->onFrameFunction();
+        uksf_ai_caching::getInstance()->onFrameFunction();
     });
 
     uksf_ai::getInstance()->missionStopped.connect([this]() {
@@ -86,46 +95,113 @@ void uksf_ai_caching::stopClientThread() {
 }
 
 void uksf_ai_caching::serverThreadFunction() {
+    LOG(DEBUG) << "Sleeping 30 seconds";
+    Sleep(30000);
+    LOG(DEBUG) << "Slept 30 seconds";
+    //TODO: improve caching time with some sort of hashmap/cache
     while (!serverThreadStop) {
         {
-            client::invoker_lock cachingLock;
-            std::vector<group> groups = sqf::all_groups();
-            /*for (auto& group : groups) {
-                object leader = sqf::leader(group);
-                if (!(sqf::get_variable(group, "uksf_ai_caching_excluded", false)) && !sqf::dynamic_simulation_enabled(group) && !sqf::is_player(leader) &&
-                    sqf::is_kind_of(sqf::vehicle(leader), "Air") && (((float)sqf::get_variable(group, "uksf_ai_caching_time", 0) + 15) < sqf::diag_ticktime())) {
-                    sqf::remote_exec_call({group, true}, "enableDynamicSimulation", 0, false);
+            LOG(DEBUG) << "LOOP: Server Start";
+            client::invoker_lock cachingServerLock;
+            auto groups = sqf::all_groups();
+            for (auto& group : groups) {
+                auto leader = sqf::leader(group);
+                if (!(sqf::get_variable(group, "uksf_ai_caching_excluded", false))) {
+                    //LOG(DEBUG) << "Exclude pass";
+                    if (!sqf::dynamic_simulation_enabled(group)) {
+                        //LOG(DEBUG) << "Simulation pass";
+                        if (!sqf::is_player(leader)) {
+                            //LOG(DEBUG) << "Player pass";
+                            if (!sqf::is_kind_of(sqf::vehicle(leader), "Air")) {
+                                //LOG(DEBUG) << "Vehicle pass";
+                                if ((((float)sqf::get_variable(group, "uksf_ai_caching_time", 0) + 15) < sqf::diag_ticktime())) {
+                                    LOG(DEBUG) << "Time pass, Enabling simulation";
+                                    sqf::remote_exec_call({ group, true }, "enableDynamicSimulation", 0, false);
+                                }
+                            }
+                        }
+                    }
                 }
-            }*/
+                /*if (!(sqf::get_variable(group, "uksf_ai_caching_excluded", false)) &&
+                    !sqf::dynamic_simulation_enabled(group) &&
+                    !sqf::is_player(leader) &&
+                    !sqf::is_kind_of(sqf::vehicle(leader), "Air") &&
+                    (((float)sqf::get_variable(group, "uksf_ai_caching_time", 0) + 15) < sqf::diag_ticktime())) {
+
+                    LOG(DEBUG) << "Enabling simulation";
+                    sqf::remote_exec_call({ group, true }, "enableDynamicSimulation", 0, false);
+                }*/
+            }
+            LOG(DEBUG) << "LOOP: Server Stop";
         }
         Sleep(5000);
     }
 }
 
 void uksf_ai_caching::clientThreadFunction() {
+    LOG(DEBUG) << "Sleeping 30 seconds";
+    Sleep(30000);
+    LOG(DEBUG) << "Slept 30 seconds";
     while (!clientThreadStop) {
         {
-            client::invoker_lock cachingLock;
-            object player = sqf::is_null(sqf::get_connected_uav(player)) ? sqf::gunner(sqf::get_connected_uav(sqf::player())) : sqf::get_variable(sqf::mission_namespace(), "bis_fnc_moduleRemoteControl_unit", sqf::player());
-            std::vector<group> groups = sqf::all_groups();
-            /*for (auto& group : groups) {
-                object leader = sqf::leader(group);
-                if (!(sqf::get_variable(group, "uksf_ai_caching_excluded", false)) && !sqf::is_player(leader) && sqf::is_kind_of(sqf::vehicle(leader), "Air") &&
-                    (sqf::get_pos_world(leader)).distance(sqf::get_pos_world(player)) > getCachingDistance() && (sqf::get_pos_world(leader)).distance(sqf::get_pos_world(player)) < sqf::get_object_view_distance().object_distance &&
-                    ((((float)sqf::get_variable(group, "uksf_ai_caching_time", 0) + 10) < sqf::diag_ticktime()) || !sqf::simulation_enabled(leader)) && uksf_common::lineOfSight(leader, player, true, true)) {
+            LOG(DEBUG) << "LOOP: Client Start";
+            client::invoker_lock cachingClientLock;
+            //auto player = sqf::is_null(sqf::get_connected_uav(sqf::player())) ? sqf::gunner(sqf::get_connected_uav(sqf::player())) : (object)(sqf::get_variable(sqf::mission_namespace(), "bis_fnc_moduleRemoteControl_unit", sqf::player()));
+            auto player = sqf::player();
+            LOG(DEBUG) << "Player: " << sqf::name(player);
+            auto groups = sqf::all_groups();
+            for (auto& group : groups) {
+                auto leader = sqf::leader(group);
+                if (!(sqf::get_variable(group, "uksf_ai_caching_excluded", false))) {
+                    //LOG(DEBUG) << "Exclude pass";
+                    if (!sqf::is_player(leader)) {
+                        //LOG(DEBUG) << "Player pass";
+                        if (!sqf::is_kind_of(sqf::vehicle(leader), "Air")) {
+                            //LOG(DEBUG) << "Vehicle pass";
+                            auto distance = (sqf::get_pos_world(leader)).distance(sqf::get_pos_world(player));
+                            if (distance > cachingDistance) {
+                                //LOG(DEBUG) << "Caching distance pass";
+                                if (distance < sqf::get_object_view_distance().object_distance) {
+                                    //LOG(DEBUG) << "View distance pass";
+                                    if ((((float)sqf::get_variable(group, "uksf_ai_caching_time", 0) + 10) < sqf::diag_ticktime()) || !sqf::simulation_enabled(leader)) {
+                                        //LOG(DEBUG) << "Time or simulation pass";
+                                        if (uksf_common::lineOfSight(leader, player, true, true)) {
+                                            LOG(DEBUG) << "LOS pass";
+                                            if (sqf::dynamic_simulation_enabled(group)) {
+                                                LOG(DEBUG) << "Dynamic simulation pass, Disabling simulation";
+                                                sqf::remote_exec_call({ group, false }, "enableDynamicSimulation", 0, false);
+                                            }
+                                            sqf::set_variable(group, "uksf_ai_caching_time", sqf::diag_ticktime());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                /*if (!(sqf::get_variable(group, "uksf_ai_caching_excluded", false)) &&
+                    !sqf::is_player(leader) &&
+                    !sqf::is_kind_of(sqf::vehicle(leader), "Air") &&
+                    (sqf::get_pos_world(leader)).distance(sqf::get_pos_world(player)) > getCachingDistance() &&
+                    (sqf::get_pos_world(leader)).distance(sqf::get_pos_world(player)) < sqf::get_object_view_distance().object_distance &&
+                    ((((float)sqf::get_variable(group, "uksf_ai_caching_time", 0) + 10) < sqf::diag_ticktime()) || !sqf::simulation_enabled(leader)) &&
+                    uksf_common::lineOfSight(leader, player, true, true)) {
+
                     if (sqf::dynamic_simulation_enabled(group)) {
+                        LOG(DEBUG) << "Disabling simulation";
                         sqf::remote_exec_call({ group, false }, "enableDynamicSimulation", 0, false);
                     }
                     sqf::set_variable(group, "uksf_ai_caching_time", sqf::diag_ticktime());
-                }
-            }*/
+                }*/
+            }
+            LOG(DEBUG) << "LOOP: Client Stop";
         }
         Sleep(1000);
     }
 }
 
 void uksf_ai_caching::onFrameFunction() {
-    std::vector<types::object> units = sqf::all_units();
+    auto units = sqf::all_units();
     for (auto& unit : units) {
         types::rv_color color{ 1.0f, 0.0f, 0.0f, 1.0f };
         if ((std::find(visibleUnits.begin(), visibleUnits.end(), unit)) != visibleUnits.end()) {
@@ -133,18 +209,4 @@ void uksf_ai_caching::onFrameFunction() {
         }
         sqf::draw_icon_3d("\\a3\\ui_f_curator\\data\\logos\\arma3_curator_eye_32_ca.paa", color, sqf::get_pos_atl(unit), 0.5f, 0.5f, 0, "", 0, 0, "TahomaB", "center", true);
     }
-}
-
-const bool& uksf_ai_caching::getCachingEnabled() {
-    return cachingEnabled;
-}
-void uksf_ai_caching::setCachingEnabled(const bool& value) {
-    cachingEnabled = value;
-}
-
-const float& uksf_ai_caching::getCachingDistance() {
-    return cachingDistance;
-}
-void uksf_ai_caching::setCachingDistance(const float& value) {
-    cachingDistance = value;
 }
