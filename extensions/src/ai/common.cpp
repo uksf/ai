@@ -41,11 +41,9 @@ bool uksf_common::lineOfSight(object& target, object& source, bool zoomCheck, bo
         if (!sqf::is_kind_of(sqf::vehicle(target), "CAManBase")) {
             distanceMultiplier *= 2.5f;
         }
-        LOG(DEBUG) << "Multiplier: " << distanceMultiplier << ", min: " << sqf::get_object_view_distance().object_distance << " vs " << (1000 + (distanceMultiplier * uksf_common::getZoom()));
         float distanceCheck = std::min(sqf::get_object_view_distance().object_distance, 1000 + (distanceMultiplier * uksf_common::getZoom()));
         float distance = (sqf::get_pos_world(target)).distance(sqf::get_pos_world(source));
         los = (distance < distanceCheck);
-        LOG(DEBUG) << "" << distance << " < " << distanceCheck << " = " << los;
     }
 
     return los;

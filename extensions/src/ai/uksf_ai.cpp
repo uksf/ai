@@ -15,9 +15,9 @@ void __cdecl intercept::on_frame() {
     uksf_ai::getInstance()->onFrame();
 }
 
-void __cdecl intercept::mission_stopped() {
-    LOG(DEBUG) << "MAIN MISSION STOPPED";
-    uksf_ai::getInstance()->missionStopped();
+void __cdecl intercept::mission_end() {
+    LOG(DEBUG) << "MAIN MISSION ENDED";
+    uksf_ai::getInstance()->missionEnded();
 };
 
 uksf_ai::uksf_ai() {

@@ -5,6 +5,7 @@
 class uksf_ai_caching: public singleton<uksf_ai_caching> {
 public:
     uksf_ai_caching();
+    ~uksf_ai_caching();
 
     void startServerThread();
     void startClientThread();
@@ -16,8 +17,8 @@ public:
     static float cachingDistance;
 
 private:
-    bool serverThreadStop = true;
-    bool clientThreadStop = true;
+    static bool serverThreadStop;
+    static bool clientThreadStop;
     std::thread serverThread, clientThread;
     std::list<types::object> visibleUnits;
 

@@ -9,5 +9,5 @@ public:
     Signal<void()> preInit;
     Signal<void()> postInit;
     Signal<void()> onFrame;
-    Signal<void()> missionStopped;
+    Signal<void()> missionEnded;
 };
