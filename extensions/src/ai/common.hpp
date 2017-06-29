@@ -9,6 +9,7 @@
 #include <variant>
 #include <vector>
 #include <functional>
+#include <chrono>
 
 #include "intercept.hpp"
 using namespace intercept;
@@ -16,11 +17,6 @@ using namespace intercept;
 #include "logging.hpp"
 #include "signalslot.hpp"
 #include "singleton.hpp"
-
-//TODO: Remove after exposed in intercept
-/*constexpr std::string_view operator ""_sv(char const* str, std::size_t len) noexcept {
-    return { str, len };
-};*/
 
 class uksf_common {
 public:

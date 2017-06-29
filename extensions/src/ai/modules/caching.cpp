@@ -1,12 +1,23 @@
 #include "caching.hpp"
 
-bool uksf_ai_caching::cachingEnabled = false;
-float uksf_ai_caching::cachingDistance = 750;
+bool uksf_ai_caching::cachingEnabled = CACHING_ENABLED_DEFAULT;
+float uksf_ai_caching::cachingDistance = CACHING_DISTNACE_DEFAULT;
 
 bool uksf_ai_caching::serverThreadStop = true;
 bool uksf_ai_caching::clientThreadStop = true;
 
 uksf_ai_caching::uksf_ai_caching() {
+    uksf_ai::getInstance()->preStart.connect([this]() {
+        LOG(DEBUG) << "CACHING SIGNAL PRESTART";
+        uksfCachingToggle = client::host::registerFunction(
+            "uksfCachingToggle",
+            "Excludes/includes object in caching system",
+            userFunctionWrapper<uksfCachingToggleFunction>,
+            types::GameDataType::NOTHING,
+            types::GameDataType::ARRAY
+        );
+    });
+
     uksf_ai::getInstance()->preInit.connect([this]() {
         LOG(DEBUG) << "CACHING SIGNAL PREINIT";
         game_value enabled_args({
@@ -14,7 +25,7 @@ uksf_ai_caching::uksf_ai_caching() {
             "CHECKBOX",
             "Caching System",
             "UKSF",
-            true,
+            CACHING_ENABLED_DEFAULT,
             true
         });
         sqf::call(uksf_common::CBA_Settings_fnc_init, enabled_args);
@@ -23,53 +34,53 @@ uksf_ai_caching::uksf_ai_caching() {
             "SLIDER",
             "Caching System Distance",
             "UKSF",
-            { 500, 2000, 750, 0 },
+            { 500, 2000, CACHING_DISTNACE_DEFAULT, 0 },
             true
         });
         sqf::call(uksf_common::CBA_Settings_fnc_init, distance_args);
 
         if (sqf::is_server()) {
-            uksf_ai_caching::getInstance()->stopServerThread();
+            getInstance()->stopServerThread();
         }
         if (sqf::has_interface()) {
-            uksf_ai_caching::getInstance()->stopClientThread();
+            getInstance()->stopClientThread();
         }
     });
 
     uksf_ai::getInstance()->postInit.connect([this]() {
         LOG(DEBUG) << "CACHING SIGNAL POSTINIT";
-        uksf_ai_caching::cachingEnabled = (sqf::get_variable(sqf::mission_namespace(), "uksf_ai_caching_enabled", true));
-        uksf_ai_caching::cachingDistance = (sqf::get_variable(sqf::mission_namespace(), "uksf_ai_caching_distance", 750));
+        cachingEnabled = (sqf::get_variable(sqf::mission_namespace(), "uksf_ai_caching_enabled", CACHING_ENABLED_DEFAULT));
+        cachingDistance = (sqf::get_variable(sqf::mission_namespace(), "uksf_ai_caching_distance", CACHING_DISTNACE_DEFAULT));
 
-        if (!uksf_ai_caching::cachingEnabled) {
+        if (!cachingEnabled) {
             LOG(INFO) << "Caching system is disabled";
             sqf::enable_dynamic_simulation_system(false);
         } else {
             LOG(INFO) << "Caching system is enabled";
             sqf::enable_dynamic_simulation_system(true);
-            sqf::set_dynamic_simulation_distance("Group", uksf_ai_caching::cachingDistance);
-            sqf::set_dynamic_simulation_distance("Vehicle", uksf_ai_caching::cachingDistance);
+            sqf::set_dynamic_simulation_distance("Group", cachingDistance);
+            sqf::set_dynamic_simulation_distance("Vehicle", cachingDistance);
             sqf::set_dynamic_simulation_distance("EmptyVehicle", 250);
             sqf::set_dynamic_simulation_distance("Prop", 50);
             sqf::set_dynamic_simulation_distance_coef("IsMoving", 1.5f);
 
             if (sqf::is_server()) {
-                uksf_ai_caching::getInstance()->startServerThread();
+                getInstance()->startServerThread();
             }
             if (sqf::has_interface()) {
-                uksf_ai_caching::getInstance()->startClientThread();
+                getInstance()->startClientThread();
             }
         };
     });
 
     uksf_ai::getInstance()->onFrame.connect([this]() {
-        //uksf_ai_caching::getInstance()->onFrameFunction();
+        //getInstance()->onFrameFunction();
     });
 
     uksf_ai::getInstance()->missionEnded.connect([this]() {
         LOG(DEBUG) << "CACHING SIGNAL MISSION ENDED";
-        uksf_ai_caching::getInstance()->stopServerThread();
-        uksf_ai_caching::getInstance()->stopClientThread();
+        getInstance()->stopServerThread();
+        getInstance()->stopClientThread();
     });
 }
 
@@ -130,9 +141,13 @@ void uksf_ai_caching::clientThreadFunction() {
             client::invoker_lock cachingLock(true);
             if (clientThreadStop) return;
             cachingLock.lock();
-
-            //auto player = sqf::is_null(sqf::get_connected_uav(sqf::player())) ? sqf::gunner(sqf::get_connected_uav(sqf::player())) : (object)(sqf::get_variable(sqf::mission_namespace(), "bis_fnc_moduleRemoteControl_unit", sqf::player()));
-            auto player = sqf::player();
+            auto player = ((object)(sqf::get_variable(sqf::mission_namespace(), "bis_fnc_moduleRemoteControl_unit", sqf::player())));
+            LOG(DEBUG) << "Player: " << sqf::type_of(player) << ", " << sqf::name(player);
+            auto uav = sqf::get_connected_uav(sqf::player());
+            if (!uav.is_null()) {
+                player = sqf::gunner(uav);
+                LOG(DEBUG) << "UAV: " << sqf::type_of(uav) << ", Player: " << sqf::type_of(player) << ", " << sqf::name(player);
+            };
             auto groups = sqf::all_groups();
             for (auto& group : groups) {
                 auto leader = sqf::leader(group);
@@ -149,6 +164,41 @@ void uksf_ai_caching::clientThreadFunction() {
         }
         Sleep(1000);
     }
+}
+
+game_value uksf_ai_caching::uksfCachingToggleFunction(game_value params) {
+    if (cachingEnabled) {
+        object cached = (object)params[0];
+        bool forceExclude = (bool)params[1];
+        auto group = sqf::get_group(cached);
+        auto message = "Excluded from caching";
+        if (!(sqf::get_variable(group, "uksf_ai_caching_excluded", false)) || forceExclude) { // Not excluded
+            sqf::set_variable(group, "uksf_ai_caching_excluded", true); // Exclude
+            if (sqf::dynamic_simulation_enabled(group)) {
+                sqf::enable_dynamic_simulation(group, false);
+                auto units = sqf::units(group);
+                std::vector<object> crewUnits = {};
+                auto vehicle = sqf::object_parent(sqf::leader(group));
+                if (!vehicle.is_null()) {
+                    crewUnits = sqf::crew(vehicle);
+                }
+                units.insert(std::end(units), std::begin(crewUnits), std::end(crewUnits));
+                for (auto unit : units) {
+                    sqf::enable_simulation_global(unit, true);
+                    sqf::set_variable(sqf::get_group(unit), "uksf_ai_caching_excluded", true);
+                }
+            }
+        } else {
+            sqf::set_variable(group, "uksf_ai_caching_excluded", false); // Include            
+            message = "Included in caching";
+        }
+
+        object player = (object)params[2];
+        if (!player.is_null()) {
+            sqf::remote_exec_call({ message }, "ace_common_fnc_displayTextStructured", player, false);
+        }
+    }
+    return "";
 }
 
 void uksf_ai_caching::onFrameFunction() {

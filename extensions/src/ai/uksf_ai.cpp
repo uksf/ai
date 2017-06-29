@@ -1,5 +1,10 @@
 #include "uksf_ai.hpp"
 
+void __cdecl intercept::pre_start() {
+    LOG(DEBUG) << "MAIN PRESTART";
+    uksf_ai::getInstance()->preStart();
+}
+
 void __cdecl intercept::pre_init() {
     LOG(DEBUG) << "MAIN PREINIT";
     uksf_common::getFunctions();
@@ -22,4 +27,5 @@ void __cdecl intercept::mission_end() {
 
 uksf_ai::uksf_ai() {
     new uksf_ai_caching();
+    new uksf_ai_cleanup();
 }
