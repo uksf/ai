@@ -142,11 +142,9 @@ void uksf_ai_caching::clientThreadFunction() {
             if (clientThreadStop) return;
             cachingLock.lock();
             auto player = ((object)(sqf::get_variable(sqf::mission_namespace(), "bis_fnc_moduleRemoteControl_unit", sqf::player())));
-            LOG(DEBUG) << "Player: " << sqf::type_of(player) << ", " << sqf::name(player);
             auto uav = sqf::get_connected_uav(sqf::player());
             if (!uav.is_null()) {
                 player = sqf::gunner(uav);
-                LOG(DEBUG) << "UAV: " << sqf::type_of(uav) << ", Player: " << sqf::type_of(player) << ", " << sqf::name(player);
             };
             auto groups = sqf::all_groups();
             for (auto& group : groups) {
