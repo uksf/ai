@@ -15,3 +15,5 @@
 
 # UKSF AI
 Custom AI mod made with Intercept
+
+[Plan and design document](https://docs.google.com/document/d/1gsHPU1Es-oc4C4Chqnkz8YuEnXIX2xSwqOtfSgD3eME/edit?usp=sharing)
