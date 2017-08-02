@@ -1,4 +1,5 @@
 #include "uksf_ai.hpp"
+#include "common.hpp"
 
 void __cdecl intercept::pre_start() {
     LOG(DEBUG) << "MAIN PRESTART";
@@ -7,7 +8,6 @@ void __cdecl intercept::pre_start() {
 
 void __cdecl intercept::pre_init() {
     LOG(DEBUG) << "MAIN PREINIT";
-    uksf_common::getFunctions();
     uksf_ai::getInstance()->preInit();
 }
 
@@ -17,16 +17,14 @@ void __cdecl intercept::post_init() {
 }
 
 void __cdecl intercept::on_frame() {
-    uksf_common::thread_run = (sqf::time() > (int)(sqf::get_variable(sqf::mission_namespace(), "CBA_common_lastTime", 0)));
     uksf_ai::getInstance()->onFrame();
 }
 
 void __cdecl intercept::mission_end() {
     LOG(DEBUG) << "MAIN MISSION ENDED";
     uksf_ai::getInstance()->missionEnded();
-};
+}
 
 uksf_ai::uksf_ai() {
-    new uksf_ai_caching();
-    new uksf_ai_cleanup();
+    new uksf_ai_common();
 }

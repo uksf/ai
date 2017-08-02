@@ -35,7 +35,7 @@ uksf_ai_cleanup::uksf_ai_cleanup() {
             CLEANUP_ENABLED_DEFAULT,
             true
         });
-        sqf::call(uksf_common::CBA_Settings_fnc_init, enabledArgs);
+        sqf::call(uksf_ai_common::CBA_Settings_fnc_init, enabledArgs);
         game_value delayArgs({
             "uksf_ai_cleanup_delay",
             "SLIDER",
@@ -44,7 +44,7 @@ uksf_ai_cleanup::uksf_ai_cleanup() {
             { 30, 600, CLEANUP_DELAY_DEFAULT, 0 },
             true
         });
-        sqf::call(uksf_common::CBA_Settings_fnc_init, delayArgs);
+        sqf::call(uksf_ai_common::CBA_Settings_fnc_init, delayArgs);
 
         if (sqf::is_server()) {
             getInstance()->stopServerThread();
@@ -91,7 +91,7 @@ void uksf_ai_cleanup::stopServerThread() {
 
 void uksf_ai_cleanup::serverThreadFunction() {
     while (!serverThreadStop) {
-        if (uksf_common::thread_run) {
+        if (uksf_ai_common::thread_run) {
             client::invoker_lock cleanupLock(true);
             if (serverThreadStop) return;
             cleanupLock.lock();

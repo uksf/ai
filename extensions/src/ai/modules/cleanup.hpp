@@ -1,6 +1,5 @@
 #pragma once
 #include "common.hpp"
-#include "uksf_ai.hpp"
 
 #define CLEANUP_ENABLED_DEFAULT true
 #define CLEANUP_DELAY_DEFAULT 300

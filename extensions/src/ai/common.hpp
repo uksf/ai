@@ -1,29 +1,20 @@
 #pragma once
-#define NOMINMAX
-#include <windows.h>
-#include <stdio.h>
-#include <cstdint>
-#include <atomic>
-#include <stdlib.h>
-#include <algorithm>
-#include <variant>
-#include <vector>
-#include <functional>
-#include <chrono>
+#include "uksf_ai.hpp"
 
-#include "intercept.hpp"
-using namespace intercept;
+#include "caching.hpp"
+#include "cleanup.hpp"
 
-#include "logging.hpp"
-#include "signalslot.hpp"
-#include "singleton.hpp"
-
-class uksf_common {
+class uksf_ai_common : public singleton<uksf_ai_common> {
 public:
-    static void getFunctions();
-    static float getZoom();
-    static bool lineOfSight(object& target, object& source, bool zoomCheck, bool groupCheck);
-    
+    uksf_ai_common();
+
+    types::registered_sqf_function uksfCommonSetPlayer;
+    static game_value uksfCommonSetPlayerFunction(game_value param);
+
     static game_value CBA_Settings_fnc_init;
     static bool thread_run;
+    static object player;
+
+    static float getZoom();
+    static bool lineOfSight(object& target, object& source, bool zoomCheck, bool groupCheck);
 };

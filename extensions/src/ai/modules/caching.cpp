@@ -49,7 +49,7 @@ uksf_ai_caching::uksf_ai_caching() {
             CACHING_ENABLED_DEFAULT,
             true
         });
-        sqf::call(uksf_common::CBA_Settings_fnc_init, enabledArgs);
+        sqf::call(uksf_ai_common::CBA_Settings_fnc_init, enabledArgs);
         game_value distanceArgs({
             "uksf_ai_caching_distance",
             "SLIDER",
@@ -58,7 +58,7 @@ uksf_ai_caching::uksf_ai_caching() {
             { 500, 2000, CACHING_DISTANCE_DEFAULT, 0 },
             true
         });
-        sqf::call(uksf_common::CBA_Settings_fnc_init, distanceArgs);
+        sqf::call(uksf_ai_common::CBA_Settings_fnc_init, distanceArgs);
 
         if (sqf::is_server()) {
             getInstance()->stopServerThread();
@@ -137,7 +137,7 @@ void uksf_ai_caching::stopClientThread() {
 
 void uksf_ai_caching::serverThreadFunction() {
     while (!serverThreadStop) {
-        if (uksf_common::thread_run) {
+        if (uksf_ai_common::thread_run) {
             client::invoker_lock cachingLock(true);
             if (serverThreadStop) return;
             cachingLock.lock();
@@ -157,24 +157,18 @@ void uksf_ai_caching::serverThreadFunction() {
 
 void uksf_ai_caching::clientThreadFunction() {
     while (!clientThreadStop) {
-        if (uksf_common::thread_run) {
+        if (uksf_ai_common::thread_run) {
             client::invoker_lock cachingLock(true);
             if (clientThreadStop) return;
             cachingLock.lock();
-            //TODO: Use an EH for changing player so as not to query every time
-            auto player = ((object)(sqf::get_variable(sqf::mission_namespace(), "bis_fnc_moduleRemoteControl_unit", sqf::player())));
-            auto uav = sqf::get_connected_uav(sqf::player());
-            if (!uav.is_null()) {
-                player = sqf::gunner(uav);
-            };
 
             for (auto& entry : cacheMap) {
                 auto group = std::get<0>(entry.second);
                 auto leader = sqf::leader(group);
                 auto time = std::get<1>(entry.second);
                 if ((((time + CACHING_TIME_CLIENT) < (clock() / CLOCKS_PER_SEC)) || !sqf::simulation_enabled(leader))) {
-                    auto distance = (sqf::get_pos_world(leader)).distance(sqf::get_pos_world(player));
-                    if (distance > cachingDistance && (distance < sqf::get_object_view_distance().object_distance) && uksf_common::lineOfSight(leader, player, true, true)) {
+                    auto distance = (sqf::get_pos_world(leader)).distance(sqf::get_pos_world(uksf_ai_common::player));
+                    if (distance > cachingDistance && (distance < sqf::get_object_view_distance().object_distance) && uksf_ai_common::lineOfSight(leader, uksf_ai_common::player, true, true)) {
                         if (sqf::dynamic_simulation_enabled(group)) {
                             sqf::remote_exec_call({ { group, true, false } }, "uksfCachingUpdate", 0, false);
                         }

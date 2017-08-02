@@ -12,12 +12,12 @@ void init(void) {
 
     conf.setGlobally(el::ConfigurationType::Filename, "logs/uksf_ai_dll.log");
     conf.setGlobally(el::ConfigurationType::MaxLogFileSize, "10240");
-#ifdef _DEBUG
+    #ifdef _DEBUG
     el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "[%datetime] - %level - {%loc}t:%thread- %msg");
     conf.setGlobally(el::ConfigurationType::PerformanceTracking, "true");
-#else
+    #else
     el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime-{%level}- %msg");
-#endif
+    #endif
     el::Loggers::setDefaultConfigurations(conf, true);
 
     LOG(INFO) << "#####################################################################################";
