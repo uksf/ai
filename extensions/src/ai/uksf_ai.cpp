@@ -17,6 +17,7 @@ void __cdecl intercept::post_init() {
 }
 
 void __cdecl intercept::on_frame() {
+    uksf_common::thread_run = (sqf::time() > (int)(sqf::get_variable(sqf::mission_namespace(), "CBA_common_lastTime", 0)));
     uksf_ai::getInstance()->onFrame();
 }
 

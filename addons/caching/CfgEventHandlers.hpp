@@ -11,27 +11,18 @@ class Extended_PreInit_EventHandlers {
 };
 
 class Extended_Init_EventHandlers {
-    class B_UAV_AI {
+    class CAManBase {
         class ADDON {
-            init = "[[(_this select 0), true, objNull]] remoteExecCall [""uksfCachingToggle"", 2]";
-        };
-    };
-    class O_UAV_AI {
-        class ADDON {
-            init = "[[(_this select 0), true, objNull]] remoteExecCall [""uksfCachingToggle"", 2]";
-        };
-    };
-    class I_UAV_AI {
-        class ADDON {
-            init = "[[(_this select 0), true, objNull]] remoteExecCall [""uksfCachingToggle"", 2]";
+            init = "[{uksfCachingAdd _this}, (_this select 0), 5] call CBA_fnc_waitAndExecute;"; // Globally executed
+            exclude[] = { "UAV_AI_base_F", "B_UAV_AI", "O_UAV_AI", "I_UAV_AI" };
         };
     };
 };
 
 class Extended_Killed_EventHandlers {
-    class All {
+    class CAManBase {
         class ADDON {
-            killed = "[[(_this select 0), true, objNull]] remoteExecCall [""uksfCachingToggle"", 2]";
+            killed = "[(_this select 0)] remoteExecCall [""uksfCachingRemove"", 0]"; // Must be executed globally
         };
     };
 };

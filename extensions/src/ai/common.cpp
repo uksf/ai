@@ -1,6 +1,7 @@
 #include "common.hpp"
 
 game_value uksf_common::CBA_Settings_fnc_init = {};
+bool uksf_common::thread_run = false;
 
 void uksf_common::getFunctions() {
     uksf_common::CBA_Settings_fnc_init = sqf::get_variable(sqf::ui_namespace(), "CBA_Settings_fnc_init");

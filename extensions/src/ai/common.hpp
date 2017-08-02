@@ -25,4 +25,5 @@ public:
     static bool lineOfSight(object& target, object& source, bool zoomCheck, bool groupCheck);
     
     static game_value CBA_Settings_fnc_init;
+    static bool thread_run;
 };

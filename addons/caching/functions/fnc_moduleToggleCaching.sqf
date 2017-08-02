@@ -23,11 +23,11 @@ if !(_activated && local _logic) exitWith {};
 if (_typeName != "OBJECT" && {!(alive _unit)}) then {
     ["Place on a living unit or vehicle"] call ace_common_fnc_displayTextStructured;
 } else {
-    private _unit = effectivecommander _unit;
+    private _unit = effectiveCommander _unit;
     if !(_unit isKindOf "CAManBase") then {
         ["Unit must be infantry"] call ace_common_fnc_displayTextStructured;
     } else {
-        [[_unit, false, player]] remoteExecCall ["uksfCachingToggle", 2];
+        [[_unit, player]] remoteExecCall ["uksfCachingToggle", 0]; // Must be executed globally
     };
 };
 

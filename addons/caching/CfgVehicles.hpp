@@ -29,9 +29,10 @@ class CfgVehicles {
         };
     };
 
-    class EGVAR(common,moduleBase);
-    class GVAR(moduleCachingToggle): EGVAR(common,moduleBase) {
+    class uksf_common_moduleBase;
+    class GVAR(moduleCachingToggle): uksf_common_moduleBase {
         curatorCanAttach = 1;
+        isGlobal = 0;
         displayName = QUOTE(Caching toggle);
         function = QFUNC(moduleToggleCaching);
         icon = QPATHTOF(UI\Icon_Module_CachingToggle_ca.paa);

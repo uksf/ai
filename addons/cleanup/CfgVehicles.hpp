@@ -29,8 +29,8 @@ class CfgVehicles {
         };
     };
 
-    class EGVAR(common,moduleBase);
-    class GVAR(moduleCleanupToggle): EGVAR(common,moduleBase) {
+    class uksf_common_moduleBase;
+    class GVAR(moduleCleanupToggle): uksf_common_moduleBase {
         curatorCanAttach = 1;
         displayName = QUOTE(Cleanup Toggle);
         function = QFUNC(moduleToggleCleanup);

@@ -27,7 +27,7 @@ uksf_ai_cleanup::uksf_ai_cleanup() {
 
     uksf_ai::getInstance()->preInit.connect([this]() {
         LOG(DEBUG) << "CLEANUP SIGNAL PREINIT";
-        game_value enabled_args({
+        game_value enabledArgs({
             "uksf_ai_cleanup_enabled",
             "CHECKBOX",
             "Cleanup System",
@@ -35,8 +35,8 @@ uksf_ai_cleanup::uksf_ai_cleanup() {
             CLEANUP_ENABLED_DEFAULT,
             true
         });
-        sqf::call(uksf_common::CBA_Settings_fnc_init, enabled_args);
-        game_value delay_args({
+        sqf::call(uksf_common::CBA_Settings_fnc_init, enabledArgs);
+        game_value delayArgs({
             "uksf_ai_cleanup_delay",
             "SLIDER",
             "Cleanup System Delay",
@@ -44,7 +44,7 @@ uksf_ai_cleanup::uksf_ai_cleanup() {
             { 30, 600, CLEANUP_DELAY_DEFAULT, 0 },
             true
         });
-        sqf::call(uksf_common::CBA_Settings_fnc_init, delay_args);
+        sqf::call(uksf_common::CBA_Settings_fnc_init, delayArgs);
 
         if (sqf::is_server()) {
             getInstance()->stopServerThread();
@@ -64,10 +64,6 @@ uksf_ai_cleanup::uksf_ai_cleanup() {
                 getInstance()->startServerThread();
             }
         };
-    });
-
-    uksf_ai::getInstance()->onFrame.connect([this]() {
-
     });
 
     uksf_ai::getInstance()->missionEnded.connect([this]() {
@@ -95,7 +91,7 @@ void uksf_ai_cleanup::stopServerThread() {
 
 void uksf_ai_cleanup::serverThreadFunction() {
     while (!serverThreadStop) {
-        {
+        if (uksf_common::thread_run) {
             client::invoker_lock cleanupLock(true);
             if (serverThreadStop) return;
             cleanupLock.lock();
@@ -115,9 +111,9 @@ void uksf_ai_cleanup::serverThreadFunction() {
     }
 }
 
-game_value uksf_ai_cleanup::uksfCleanupKilledFunction(game_value rawKilled) {
+game_value uksf_ai_cleanup::uksfCleanupKilledFunction(game_value param) {
     if (cleanupEnabled) {
-        object killed = (object)rawKilled;
+        object killed = (object)param;
         auto &killedMap = getInstance()->killedMap;
         auto entry = killedMap.find(killed.hash());
         if (entry != killedMap.end()) {
@@ -145,13 +141,12 @@ game_value uksf_ai_cleanup::uksfCleanupToggleFunction(game_value params) {
                 std::get<2>(entry->second) = false; // Include    
                 message = "Included in cleanup";
             }
-        } else {
-            // Doesn't exist, add and exclude
+        } else { // Doesn't exist, add and exclude            
             killedMap.insert({ killed.hash(), killed_map_type({ killed, (clock_t)((clock() / CLOCKS_PER_SEC) + (cleanupDelay * ((sqf::is_kind_of(killed, "CAManBase")) ? 1 : 2))), true }) });
         }
 
-        object player = (object)params[2];
-        if (!player.is_null()) {
+        if (params.size() > 2) {
+            object player = (object)params[2];
             sqf::remote_exec_call({ message }, "ace_common_fnc_displayTextStructured", player, false);
         }
     }

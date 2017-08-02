@@ -8,7 +8,7 @@ class Cfg3DEN {
                         control = "Checkbox";
                         displayName = QUOTE(Cleanup exclude);
                         tooltip = QUOTE(Excludes object from cleanup);
-                        expression = "[[_this, true, objNull]] remoteExecCall [""uksfCleanupToggle"", 2]";
+                        expression = "[[_this, true]] remoteExecCall [""uksfCleanupToggle"", 2]";
                         typeName = "BOOL";
                         defaultValue = "(false)";
                         condition = "1";

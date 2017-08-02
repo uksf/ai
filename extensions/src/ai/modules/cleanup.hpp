@@ -21,9 +21,9 @@ public:
     std::unordered_map<size_t, killed_map_type> killedMap;
 
     types::registered_sqf_function uksfCleanupKilled;
-    static game_value uksfCleanupKilledFunction(game_value object);
+    static game_value uksfCleanupKilledFunction(game_value param);
     types::registered_sqf_function uksfCleanupToggle;
-    static game_value uksfCleanupToggleFunction(game_value object);
+    static game_value uksfCleanupToggleFunction(game_value params);
 
 private:
     static bool serverThreadStop;
