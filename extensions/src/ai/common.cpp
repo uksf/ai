@@ -21,6 +21,10 @@ uksf_ai_common::uksf_ai_common() {
         CBA_Settings_fnc_init = sqf::get_variable(sqf::ui_namespace(), "CBA_Settings_fnc_init");
     });
 
+    uksf_ai::getInstance()->postInit.connect([this]() {
+        LOG(DEBUG) << "COMMON SIGNAL POSTINIT";
+    });
+
     uksf_ai::getInstance()->onFrame.connect([this]() {
         thread_run = (sqf::time() > (int)(sqf::get_variable(sqf::mission_namespace(), "CBA_common_lastTime", 0)));
     });

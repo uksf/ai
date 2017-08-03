@@ -27,7 +27,7 @@ uksf_ai_caching::uksf_ai_caching() {
             "uksfCachingUpdate",
             "Updates cached state. Includes vehicle occupants",
             userFunctionWrapper<uksfCachingUpdateFunction>,
-            types::GameDataType::BOOL,
+            types::GameDataType::NOTHING,
             types::GameDataType::ARRAY
         );
         uksfCachingToggle = client::host::registerFunction(
@@ -184,7 +184,7 @@ void uksf_ai_caching::clientThreadFunction() {
 game_value uksf_ai_caching::uksfCachingAddFunction(game_value param) { // Should be executed globally
     if (cachingEnabled) {
         object unit = (object)param;
-        if (sqf::is_player(unit) || sqf::is_kind_of(sqf::vehicle(unit), "Air")) return "";
+        if (sqf::is_player(unit) || sqf::is_kind_of(sqf::vehicle(unit), "Air")) return game_value();
         auto group = sqf::get_group(unit);
         auto &cacheMap = getInstance()->cacheMap;
         auto entry = cacheMap.find(group.hash());
@@ -192,7 +192,7 @@ game_value uksf_ai_caching::uksfCachingAddFunction(game_value param) { // Should
             cacheMap.insert({ group.hash(), cache_map_type({ group, (clock_t)(0) }) });
         }
     }
-    return "";
+    return game_value();
 }
 
 game_value uksf_ai_caching::uksfCachingRemoveFunction(game_value param) { // Should be executed globally
@@ -242,7 +242,7 @@ game_value uksf_ai_caching::uksfCachingUpdateFunction(game_value params) { // Sh
             }
         }
     }
-    return "";
+    return game_value();
 }
 
 game_value uksf_ai_caching::uksfCachingToggleFunction(game_value params) { // Should be executed globally
@@ -259,5 +259,5 @@ game_value uksf_ai_caching::uksfCachingToggleFunction(game_value params) { // Sh
             sqf::remote_exec_call({ message }, "ace_common_fnc_displayTextStructured", player, false);
         }
     }
-    return "";
+    return game_value();
 }

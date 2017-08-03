@@ -124,7 +124,7 @@ game_value uksf_ai_cleanup::uksfCleanupKilledFunction(game_value param) {
             killedMap.insert({ killed.hash(), killed_map_type({ killed, (clock_t)((clock() / CLOCKS_PER_SEC) + (cleanupDelay * ((sqf::is_kind_of(killed, "CAManBase")) ? 1 : 2))), false }) });
         }
     }
-    return "";
+    return game_value();
 }
 
 game_value uksf_ai_cleanup::uksfCleanupToggleFunction(game_value params) {
@@ -150,5 +150,5 @@ game_value uksf_ai_cleanup::uksfCleanupToggleFunction(game_value params) {
             sqf::remote_exec_call({ message }, "ace_common_fnc_displayTextStructured", player, false);
         }
     }
-    return "";
+    return game_value();
 }
