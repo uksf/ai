@@ -2,7 +2,7 @@
 
 #ifndef SINGLETON
 #define SINGLETON
-template <class  T>
+template <class T>
 class singleton {
 public:
     static T* getInstance();
@@ -12,7 +12,7 @@ protected:
     singleton() { instance = static_cast <T*> (this); }
 };
 
-template <class  T>
+template <class T>
 typename T* singleton<T>::instance = 0;
 
 template <class T>

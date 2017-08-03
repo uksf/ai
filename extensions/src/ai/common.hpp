@@ -1,9 +1,6 @@
 #pragma once
 #include "uksf_ai.hpp"
 
-#include "caching.hpp"
-#include "cleanup.hpp"
-
 class uksf_ai_common : public singleton<uksf_ai_common> {
 public:
     uksf_ai_common();

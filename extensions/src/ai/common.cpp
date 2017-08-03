@@ -1,12 +1,15 @@
 #include "common.hpp"
 
+#include "caching.cpp"
+#include "cleanup.cpp"
+
 game_value uksf_ai_common::CBA_Settings_fnc_init = {};
 bool uksf_ai_common::thread_run = false;
 object uksf_ai_common::player = game_value();
 
 uksf_ai_common::uksf_ai_common() {
     uksf_ai::getInstance()->preStart.connect([this]() {
-        LOG(DEBUG) << "COMMON SIGNAL PRESTART";
+        LOG(DEBUG) << "COMMON PRESTART";
         uksfCommonSetPlayer = client::host::registerFunction(
             "uksfCommonSetPlayer",
             "Sets player object",
@@ -17,12 +20,12 @@ uksf_ai_common::uksf_ai_common() {
     });
 
     uksf_ai::getInstance()->preInit.connect([this]() {
-        LOG(DEBUG) << "COMMON SIGNAL PREINIT";
+        LOG(DEBUG) << "COMMON PREINIT";
         CBA_Settings_fnc_init = sqf::get_variable(sqf::ui_namespace(), "CBA_Settings_fnc_init");
     });
 
     uksf_ai::getInstance()->postInit.connect([this]() {
-        LOG(DEBUG) << "COMMON SIGNAL POSTINIT";
+        LOG(DEBUG) << "COMMON POSTINIT";
     });
 
     uksf_ai::getInstance()->onFrame.connect([this]() {

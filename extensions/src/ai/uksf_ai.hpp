@@ -17,6 +17,7 @@ using namespace intercept;
 #include "logging.hpp"
 #include "signalslot.hpp"
 #include "singleton.hpp"
+#include "threaded.hpp"
 
 class uksf_ai : public singleton<uksf_ai> {
 public:
