@@ -2,12 +2,15 @@
 
 #include "caching.cpp"
 #include "cleanup.cpp"
+#include "spawning.cpp"
 
 game_value uksf_ai_common::CBA_Settings_fnc_init = {};
 bool uksf_ai_common::thread_run = false;
 object uksf_ai_common::player = game_value();
 
 uksf_ai_common::uksf_ai_common() {
+    rand = new randomgen();
+
     uksf_ai::getInstance()->preStart.connect([this]() {
         LOG(DEBUG) << "COMMON PRESTART";
         uksfCommonSetPlayer = client::host::registerFunction(
@@ -34,6 +37,7 @@ uksf_ai_common::uksf_ai_common() {
 
     new uksf_ai_caching();
     new uksf_ai_cleanup();
+    new uksf_ai_spawning();
 }
 
 game_value uksf_ai_common::uksfCommonSetPlayerFunction(game_value param) {
@@ -82,4 +86,16 @@ bool uksf_ai_common::lineOfSight(object& target, object& source, bool zoomCheck,
     }
 
     return los;
+}
+
+side uksf_ai_common::getSide(int sideNumber) {
+    switch (sideNumber) {
+    case 1:
+        return sqf::west();
+    case 2:
+        return sqf::independent();
+    case 0:
+    default:
+        return sqf::east();
+    }
 }

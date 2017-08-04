@@ -10,11 +10,13 @@
 #include <vector>
 #include <functional>
 #include <chrono>
+#include <random>
 
 #include "intercept.hpp"
 using namespace intercept;
 
 #include "logging.hpp"
+#include "randomgen.hpp"
 #include "signalslot.hpp"
 #include "singleton.hpp"
 #include "threaded.hpp"
