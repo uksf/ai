@@ -9,7 +9,7 @@ public:
     ~uksf_ai_spawning();
 
 private:
-    std::unordered_map<std::string, std::vector<config_group_type>> groupConfigMap{};
+    std::unordered_map<std::string, std::vector<config_group_type>> _groupConfigMap{};
 
     void getGroupConfigs();
     std::vector<std::string> setGroupFlags(config group);

@@ -1,14 +1,12 @@
 #pragma once
 
-#ifndef THREADED
-#define THREADED
 template <class T>
 class threaded {
 public:
     threaded() {
-        uksf_ai::getInstance()->missionEnded.connect([this]() {
-            singleton<T>::getInstance()->stopServerThread();
-            singleton<T>::getInstance()->stopClientThread();
+        uksf_ai::getInstance().missionEnded.connect([this]() {
+            singleton<T>::getInstance().stopServerThread();
+            singleton<T>::getInstance().stopClientThread();
         });
     };
 
@@ -23,31 +21,31 @@ public:
     virtual void clientFunction() {};
 
 protected:
-    std::thread serverThread, clientThread;
+    std::thread _serverThread, _clientThread;
 
     void startServerThread() {
         serverThreadStop = false;
-        serverThread = std::thread(&threaded<T>::serverThreadFunction, this);
-        serverThread.detach();
+        _serverThread = std::thread(&threaded<T>::serverThreadFunction, this);
+        _serverThread.detach();
     };
 
     void startClientThread() {
         clientThreadStop = false;
-        clientThread = std::thread(&threaded<T>::clientThreadFunction, this);
-        clientThread.detach();
+        _clientThread = std::thread(&threaded<T>::clientThreadFunction, this);
+        _clientThread.detach();
     };
 
     void stopServerThread() {
-        if (serverThread.joinable()) {
+        if (_serverThread.joinable()) {
             serverThreadStop = true;
-            serverThread.join();
+            _serverThread.join();
         }
     };
 
     void stopClientThread() {
-        if (clientThread.joinable()) {
+        if (_clientThread.joinable()) {
             clientThreadStop = true;
-            clientThread.join();
+            _clientThread.join();
         }
     };
 
@@ -67,4 +65,3 @@ protected:
         }
     };
 };
-#endif

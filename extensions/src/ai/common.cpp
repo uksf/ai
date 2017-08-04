@@ -8,7 +8,7 @@ object uksf_ai_common::player = game_value();
 uksf_ai_common::uksf_ai_common() {
     rand = new randomgen();
 
-    uksf_ai::getInstance()->preStart.connect([this]() {
+    uksf_ai::getInstance().preStart.connect([this]() {
         LOG(DEBUG) << "COMMON PRESTART";
         uksfCommonSetPlayer = client::host::registerFunction(
             "uksfCommonSetPlayer",
@@ -19,20 +19,18 @@ uksf_ai_common::uksf_ai_common() {
         );
     });
 
-    uksf_ai::getInstance()->preInit.connect([this]() {
+    uksf_ai::getInstance().preInit.connect([this]() {
         LOG(DEBUG) << "COMMON PREINIT";
         CBA_Settings_fnc_init = sqf::get_variable(sqf::ui_namespace(), "CBA_Settings_fnc_init");
     });
 
-    uksf_ai::getInstance()->postInit.connect([this]() {
+    uksf_ai::getInstance().postInit.connect([this]() {
         LOG(DEBUG) << "COMMON POSTINIT";
     });
 
-    uksf_ai::getInstance()->onFrame.connect([this]() {
+    uksf_ai::getInstance().onFrame.connect([this]() {
         thread_run = (sqf::time() > (int)(sqf::get_variable(sqf::mission_namespace(), "CBA_common_lastTime", 0)));
     });
-
-    uksf_ai::getInstance()->initModule();
 }
 
 game_value uksf_ai_common::uksfCommonSetPlayerFunction(game_value param) {

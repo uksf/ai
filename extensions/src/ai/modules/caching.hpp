@@ -17,9 +17,9 @@ public:
     virtual void clientFunction();
 
 private:
-    std::unordered_map<size_t, cache_map_type> cacheMap{};
-    bool cachingEnabled = CACHING_ENABLED_DEFAULT;
-    float cachingDistance = CACHING_DISTANCE_DEFAULT;
+    std::unordered_map<size_t, cache_map_type> _cacheMap{};
+    bool _cachingEnabled = CACHING_ENABLED_DEFAULT;
+    float _cachingDistance = CACHING_DISTANCE_DEFAULT;
 
     types::registered_sqf_function uksfCachingAdd;
     static game_value uksfCachingAddFunction(game_value param);

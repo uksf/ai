@@ -1,29 +1,25 @@
 #pragma once
 
-#ifndef SINGLETON
-#define SINGLETON
-template <class T>
+template<typename T>
 class singleton {
+    singleton(const singleton&) = delete;
+    singleton(singleton&&) = delete;
+    singleton& operator=(const singleton&) = delete;
+    singleton& operator=(singleton&&) = delete;
+
 public:
-    static T* getInstance();
+    static T& getInstance() noexcept {
+        return _singletonInstance;
+    }
 
 protected:
-    static T* instance;
-    singleton() { instance = static_cast <T*> (this); }
+    singleton() {}
+    static T _singletonInstance;
+    static bool _initialized;
 };
 
-template <class T>
-typename T* singleton<T>::instance = 0;
+template<typename T>
+T singleton<T>::_singletonInstance;
 
-template <class T>
-T* singleton<T>::getInstance() {
-    if (instance == 0) {
-        try {
-            singleton<T>::instance = new T();
-        } catch (std::exception& e) {
-            LOG(ERROR) << "Error creating singleton: " << e.what();
-        }
-    }
-    return instance;
-}
-#endif
+template<typename T>
+bool singleton<T>::_initialized = false;

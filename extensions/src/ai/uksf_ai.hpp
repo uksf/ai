@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <cstdint>
+#include <assert.h>
 #include <atomic>
 #include <stdlib.h>
 #include <algorithm>
@@ -25,7 +26,7 @@ class uksf_ai : public singleton<uksf_ai> {
 public:
     uksf_ai();
 
-    Signal<void()> initModule;
+    //Signal<void()> initModule;
     Signal<void()> preStart;
     Signal<void()> preInit;
     Signal<void()> postInit;

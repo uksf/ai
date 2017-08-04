@@ -11,7 +11,7 @@ private:
 
 public:
     void connect(Slot slot) {
-        slots.push_back(slot);
+        _slots.push_back(slot);
     }
 
     std::vector<ReturnType> operator() (Args... args) const {
@@ -19,18 +19,18 @@ public:
     }
     std::vector<ReturnType> emit(Args... args) const {
         std::vector<ReturnType> returnData;
-        if (slots.empty())
+        if (_slots.empty())
             return;
-        for (auto &slot : slots) {
+        for (auto &slot : _slots) {
             returnData.push_back(slot(args...));
         }
         return returnData;
     }
     void removeAllSlots() {
-        slots.clear();
+        _slots.clear();
     }
 private:
-    std::vector<Slot> slots{};
+    std::vector<Slot> _slots{};
 };
 
 template<class... Args>
@@ -40,22 +40,22 @@ private:
 
 public:
     void connect(Slot slot) {
-        slots.push_back(slot);
+        _slots.push_back(slot);
     }
 
     void operator() (Args... args) const {
         return emit(args...);
     }
     void emit(Args... args) const {
-        if (slots.empty())
+        if (_slots.empty())
             return;
-        for (auto &slot : slots) {
+        for (auto &slot : _slots) {
             slot(args...);
         }
     }
     void removeAllSlots() {
-        slots.clear();
+        _slots.clear();
     }
 private:
-    std::vector<Slot> slots{};
+    std::vector<Slot> _slots{};
 };

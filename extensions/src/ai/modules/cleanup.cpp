@@ -2,7 +2,7 @@
 
 
 uksf_ai_cleanup::uksf_ai_cleanup() {
-    uksf_ai::getInstance()->preStart.connect([this]() {
+    uksf_ai::getInstance().preStart.connect([this]() {
         LOG(DEBUG) << "CLEANUP PRESTART";
         uksfCleanupKilled = client::host::registerFunction(
             "uksfCleanupKilled",
@@ -20,7 +20,7 @@ uksf_ai_cleanup::uksf_ai_cleanup() {
         );
     });
 
-    uksf_ai::getInstance()->preInit.connect([this]() {
+    uksf_ai::getInstance().preInit.connect([this]() {
         LOG(DEBUG) << "CLEANUP PREINIT";
         game_value enabledArgs({
             "uksf_ai_cleanup_enabled",
@@ -42,77 +42,77 @@ uksf_ai_cleanup::uksf_ai_cleanup() {
         sqf::call(uksf_ai_common::CBA_Settings_fnc_init, delayArgs);
 
         if (sqf::is_server()) {
-            getInstance()->stopServerThread();
+            getInstance().stopServerThread();
         }
     });
 
-    uksf_ai::getInstance()->postInit.connect([this]() {
+    uksf_ai::getInstance().postInit.connect([this]() {
         LOG(DEBUG) << "CLEANUP POSTINIT";
-        cleanupEnabled = (sqf::get_variable(sqf::mission_namespace(), "uksf_ai_cleanup_enabled", CLEANUP_ENABLED_DEFAULT));
-        cleanupDelay = (sqf::get_variable(sqf::mission_namespace(), "uksf_ai_cleanup_distance", CLEANUP_DELAY_DEFAULT));
+        _cleanupEnabled = (sqf::get_variable(sqf::mission_namespace(), "uksf_ai_cleanup_enabled", CLEANUP_ENABLED_DEFAULT));
+        _cleanupDelay = (sqf::get_variable(sqf::mission_namespace(), "uksf_ai_cleanup_distance", CLEANUP_DELAY_DEFAULT));
 
-        if (!cleanupEnabled) {
+        if (!_cleanupEnabled) {
             LOG(INFO) << "Cleanup system is disabled";
         } else {
             LOG(INFO) << "Cleanup system is enabled";
             if (sqf::is_server()) {
-                getInstance()->startServerThread();
+                getInstance().startServerThread();
             }
         };
     });
 
-    uksf_ai::getInstance()->missionEnded.connect([this]() {
+    uksf_ai::getInstance().missionEnded.connect([this]() {
         LOG(DEBUG) << "CLEANUP MISSION ENDED";
-        getInstance()->stopServerThread();
+        getInstance().stopServerThread();
     });
 };
 
 uksf_ai_cleanup::~uksf_ai_cleanup() {
-    killedMap.clear();
+    _killedMap.clear();
 };
 
 void uksf_ai_cleanup::serverFunction() {
     client::invoker_lock cleanupLock(true);
     if (serverThreadStop) return;
     cleanupLock.lock();
-    for (auto entry = killedMap.begin(); entry != killedMap.end();) {
+    for (auto entry = _killedMap.begin(); entry != _killedMap.end();) {
         auto killed = std::get<0>(entry->second);
         auto time = std::get<1>(entry->second);
         auto excluded = std::get<2>(entry->second);
         if ((!excluded && (time < (clock() / CLOCKS_PER_SEC)) && !sqf::alive(killed)) || killed.is_null()) {
             sqf::delete_vehicle(killed);
-            entry = killedMap.erase(entry);
+            entry = _killedMap.erase(entry);
         } else {
             entry++;
         }
     }
-    Sleep((DWORD)((cleanupDelay / 4) * CLOCKS_PER_SEC));
+    Sleep((DWORD)((_cleanupDelay / 4) * CLOCKS_PER_SEC));
 };
 
 game_value uksf_ai_cleanup::uksfCleanupKilledFunction(game_value param) {
-    if (getInstance()->cleanupEnabled) {
+    if (getInstance()._cleanupEnabled) {
         object killed = (object)param;
-        auto &killedMap = getInstance()->killedMap;
-        auto entry = killedMap.find(killed.hash());
-        if (entry != killedMap.end()) {
+        auto &_killedMap = getInstance()._killedMap;
+        auto entry = _killedMap.find(killed.hash());
+        if (entry != _killedMap.end()) {
             if (!std::get<2>(entry->second)) { // Not excluded
-                std::get<1>(entry->second) = (clock_t)((clock() / CLOCKS_PER_SEC) + (getInstance()->cleanupDelay * ((sqf::is_kind_of(std::get<0>(entry->second), "CAManBase")) ? 1 : 2))); // Update time killed
+                std::get<1>(entry->second) = (clock_t)((clock() / CLOCKS_PER_SEC) + (getInstance()._cleanupDelay * ((sqf::is_kind_of(std::get<0>(entry->second), "CAManBase")) ? 1 : 2))); // Update time killed
             }
         } else {
-            killedMap.insert({ killed.hash(), killed_map_type({ killed, (clock_t)((clock() / CLOCKS_PER_SEC) + (getInstance()->cleanupDelay * ((sqf::is_kind_of(killed, "CAManBase")) ? 1 : 2))), false }) });
+            _killedMap.insert({ killed.hash(), killed_map_type({ killed, (clock_t)((clock() / CLOCKS_PER_SEC) + (getInstance()._cleanupDelay * ((sqf::is_kind_of(killed, "CAManBase")) ? 1 : 2))), false }) });
         }
     }
     return game_value();
 };
 
 game_value uksf_ai_cleanup::uksfCleanupToggleFunction(game_value params) {
-    if (getInstance()->cleanupEnabled) {
+    if (getInstance()._cleanupEnabled) {
         object killed = (object)params[0];
         bool forceExclude = (bool)params[1];
-        auto &killedMap = getInstance()->killedMap;
-        auto entry = killedMap.find(killed.hash());
+        auto &_killedMap = getInstance()._killedMap;
+        auto entry = _killedMap.find(killed.hash());
         auto message = "Excluded from cleanup";
-        if (entry != killedMap.end()) {
+        if (entry != _killedMap.end()) {
             if (!std::get<2>(entry->second) || forceExclude) { // Not excluded
                 std::get<2>(entry->second) = true; // Exclude
             } else {
@@ -120,7 +120,7 @@ game_value uksf_ai_cleanup::uksfCleanupToggleFunction(game_value params) {
                 message = "Included in cleanup";
             }
         } else { // Doesn't exist, add and exclude            
-            killedMap.insert({ killed.hash(), killed_map_type({ killed, (clock_t)((clock() / CLOCKS_PER_SEC) + (getInstance()->cleanupDelay * ((sqf::is_kind_of(killed, "CAManBase")) ? 1 : 2))), true }) });
+            _killedMap.insert({ killed.hash(), killed_map_type({ killed, (clock_t)((clock() / CLOCKS_PER_SEC) + (getInstance()._cleanupDelay * ((sqf::is_kind_of(killed, "CAManBase")) ? 1 : 2))), true }) });
         }
 
         if (params.size() > 2) {

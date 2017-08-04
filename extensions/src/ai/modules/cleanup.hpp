@@ -15,9 +15,9 @@ public:
     virtual void clientFunction() {};
 
 private:
-    std::unordered_map<size_t, killed_map_type> killedMap{};
-    bool cleanupEnabled = CLEANUP_ENABLED_DEFAULT;
-    float cleanupDelay = CLEANUP_DELAY_DEFAULT;
+    std::unordered_map<size_t, killed_map_type> _killedMap{};
+    bool _cleanupEnabled = CLEANUP_ENABLED_DEFAULT;
+    float _cleanupDelay = CLEANUP_DELAY_DEFAULT;
 
     types::registered_sqf_function uksfCleanupKilled;
     static game_value uksfCleanupKilledFunction(game_value param);

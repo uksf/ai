@@ -23,7 +23,7 @@ void init(void) {
     LOG(INFO) << "#####################################################################################";
     LOG(INFO) << "Intercept UKSF AI DLL Loaded";
 
-    new uksf_ai();
+    uksf_ai::getInstance();
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
