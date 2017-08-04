@@ -1,8 +1,5 @@
+#pragma once
 #include "common.hpp"
-
-#include "caching.cpp"
-#include "cleanup.cpp"
-#include "spawning.cpp"
 
 game_value uksf_ai_common::CBA_Settings_fnc_init = {};
 bool uksf_ai_common::thread_run = false;
@@ -35,9 +32,7 @@ uksf_ai_common::uksf_ai_common() {
         thread_run = (sqf::time() > (int)(sqf::get_variable(sqf::mission_namespace(), "CBA_common_lastTime", 0)));
     });
 
-    new uksf_ai_caching();
-    new uksf_ai_cleanup();
-    new uksf_ai_spawning();
+    uksf_ai::getInstance()->initModule();
 }
 
 game_value uksf_ai_common::uksfCommonSetPlayerFunction(game_value param) {
