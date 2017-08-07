@@ -100,37 +100,35 @@ uksf_ai_caching::~uksf_ai_caching() {
 };
 
 void uksf_ai_caching::serverFunction() {
-    client::invoker_lock cachingLock(true);
-    if (serverThreadStop) return;
-    cachingLock.lock();
-
-    for (auto& entry : _cacheMap) {
-        auto group = std::get<0>(entry.second);
-        auto leader = sqf::leader(group);
-        auto time = std::get<1>(entry.second);
-        if (((time + CACHING_TIME_SERVER) < (clock() / CLOCKS_PER_SEC)) && !sqf::dynamic_simulation_enabled(group)) {
-            sqf::remote_exec_call({ { group, false, false } }, "uksfCachingUpdate", 0, false);
+    {
+        client::invoker_lock cachingLock;
+        for (auto& entry : _cacheMap) {
+            auto group = std::get<0>(entry.second);
+            auto leader = sqf::leader(group);
+            auto time = std::get<1>(entry.second);
+            if (((time + CACHING_TIME_SERVER) < (clock() / CLOCKS_PER_SEC)) && !sqf::dynamic_simulation_enabled(group)) {
+                sqf::remote_exec_call({ { group, false, false } }, "uksfCachingUpdate", 0, false);
+            }
         }
     }
     Sleep(5000);
 };
 
 void uksf_ai_caching::clientFunction() {
-    client::invoker_lock cachingLock(true);
-    if (clientThreadStop) return;
-    cachingLock.lock();
-
-    for (auto& entry : _cacheMap) {
-        auto group = std::get<0>(entry.second);
-        auto leader = sqf::leader(group);
-        auto time = std::get<1>(entry.second);
-        if ((((time + CACHING_TIME_CLIENT) < (clock() / CLOCKS_PER_SEC)) || !sqf::simulation_enabled(leader))) {
-            auto distance = (sqf::get_pos_world(leader)).distance(sqf::get_pos_world(uksf_ai_common::player));
-            if (distance > _cachingDistance && (distance < sqf::get_object_view_distance().object_distance) && uksf_ai_common::lineOfSight(leader, uksf_ai_common::player, true, true)) {
-                if (sqf::dynamic_simulation_enabled(group)) {
-                    sqf::remote_exec_call({ { group, true, false } }, "uksfCachingUpdate", 0, false);
+    {
+        client::invoker_lock cachingLock;
+        for (auto& entry : _cacheMap) {
+            auto group = std::get<0>(entry.second);
+            auto leader = sqf::leader(group);
+            auto time = std::get<1>(entry.second);
+            if ((((time + CACHING_TIME_CLIENT) < (clock() / CLOCKS_PER_SEC)) || !sqf::simulation_enabled(leader))) {
+                auto distance = (sqf::get_pos_world(leader)).distance(sqf::get_pos_world(uksf_ai_common::player));
+                if (distance > _cachingDistance && (distance < sqf::get_object_view_distance().object_distance) && uksf_ai_common::lineOfSight(leader, uksf_ai_common::player, true, true)) {
+                    if (sqf::dynamic_simulation_enabled(group)) {
+                        sqf::remote_exec_call({ { group, true, false } }, "uksfCachingUpdate", 0, false);
+                    }
+                    std::get<1>(entry.second) = (clock_t)(clock() / CLOCKS_PER_SEC);
                 }
-                std::get<1>(entry.second) = (clock_t)(clock() / CLOCKS_PER_SEC);
             }
         }
     }

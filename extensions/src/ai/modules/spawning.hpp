@@ -11,7 +11,10 @@ public:
 private:
     std::unordered_map<std::string, std::vector<config_group_type>> _groupConfigMap{};
 
-    void getGroupConfigs();
+    void setGroupConfigs();
     std::vector<std::string> setGroupFlags(config group);
-    std::tuple<side, config> selectGroup(std::string faction);
+    bool checkHasAA(sqf::config_entry unitConfig);
+
+    types::registered_sqf_function uksfSpawningGetGroup;
+    static game_value uksfSpawningGetGroupFunction(game_value params);
 };

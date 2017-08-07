@@ -31,6 +31,7 @@ void __cdecl intercept::mission_end() {
 
 uksf_ai::uksf_ai() {
     uksf_ai_common::getInstance();
+
     uksf_ai_caching::getInstance();
     uksf_ai_cleanup::getInstance();
     uksf_ai_spawning::getInstance();

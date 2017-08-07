@@ -6,8 +6,6 @@ bool uksf_ai_common::thread_run = false;
 object uksf_ai_common::player = game_value();
 
 uksf_ai_common::uksf_ai_common() {
-    rand = new randomgen();
-
     uksf_ai::getInstance().preStart.connect([this]() {
         LOG(DEBUG) << "COMMON PRESTART";
         uksfCommonSetPlayer = client::host::registerFunction(

@@ -72,18 +72,18 @@ uksf_ai_cleanup::~uksf_ai_cleanup() {
 };
 
 void uksf_ai_cleanup::serverFunction() {
-    client::invoker_lock cleanupLock(true);
-    if (serverThreadStop) return;
-    cleanupLock.lock();
-    for (auto entry = _killedMap.begin(); entry != _killedMap.end();) {
-        auto killed = std::get<0>(entry->second);
-        auto time = std::get<1>(entry->second);
-        auto excluded = std::get<2>(entry->second);
-        if ((!excluded && (time < (clock() / CLOCKS_PER_SEC)) && !sqf::alive(killed)) || killed.is_null()) {
-            sqf::delete_vehicle(killed);
-            entry = _killedMap.erase(entry);
-        } else {
-            entry++;
+    {
+        client::invoker_lock cleanupLock;
+        for (auto entry = _killedMap.begin(); entry != _killedMap.end();) {
+            auto killed = std::get<0>(entry->second);
+            auto time = std::get<1>(entry->second);
+            auto excluded = std::get<2>(entry->second);
+            if ((!excluded && (time < (clock() / CLOCKS_PER_SEC)) && !sqf::alive(killed)) || killed.is_null()) {
+                sqf::delete_vehicle(killed);
+                entry = _killedMap.erase(entry);
+            } else {
+                entry++;
+            }
         }
     }
     Sleep((DWORD)((_cleanupDelay / 4) * CLOCKS_PER_SEC));
